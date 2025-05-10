@@ -41,41 +41,51 @@ echo -e "* Installed Dependencies"
 
 echo -e "* Downloading MTA:SA Server"
 
-# Download the MTA:SA server files from the correct URL
-wget https://linux.multitheftauto.com/dl/multitheftauto_linux_x64.tar.gz -O mtasa.tar.gz
+# Download the MTA:SA server files
+wget https://mirror.multitheftauto.com/mta/mtasa_linux_x64.tar.gz -O mtasa.tar.gz
 if [ $? -ne 0 ]; then
-    echo -e "${RED}Failed to download the MTA:SA server file!${NC}"
+    echo -e "${RED}Failed to download MTA:SA server files! Please check the URL or your internet connection.${NC}"
     exit 1
 fi
+
+# Extract the downloaded files
 tar -xvzf mtasa.tar.gz
 rm mtasa.tar.gz
 
 echo -e "* MTA:SA Server Installed"
 
-# Find the MTA folder name and change directory to it
-MTA_DIR=$(ls -d */ | grep -i 'multitheftauto' | head -n 1)
-if [ -z "$MTA_DIR" ]; then
-    echo -e "${RED}MTA directory not found!${NC}"
+# Check if MTA directory exists
+if [ ! -d "multitheftauto_linux_x64" ]; then
+    echo -e "${RED}MTA directory not found! The server may not have been installed correctly.${NC}"
     exit 1
 fi
 
-echo -e "* Changing directory to $MTA_DIR"
-cd "$MTA_DIR"
+# Change to the MTA directory
+cd multitheftauto_linux_x64/
 
-# List the files in the directory to confirm mta-server exists
-echo -e "* Listing files in $MTA_DIR"
-ls -l
-
-# Check if the mta-server file exists
-if [ -f "./mta-server" ]; then
-    echo -e "* Starting MTA:SA Server"
-    ./mta-server
-    echo -e "* MTA:SA Server is now running!"
-else
-    echo -e "${RED}mta-server file not found in $MTA_DIR!${NC}"
+# Check if mta-server exists
+if [ ! -f "mta-server" ]; then
+    echo -e "${RED}mta-server file not found! Please ensure the server was extracted correctly.${NC}"
     exit 1
 fi
 
-# Additional message to run `node .`
-echo -e "* Run 'node .' to start the server."
+echo -e "* Starting MTA:SA Server"
 
+# Start MTA:SA server
+./mta-server &
+
+echo -e "* MTA:SA Server is now running!"
+
+# Optionally, configure the panel with Node.js (if you need to configure Draco Daemon or other services)
+echo -e "* Setting up Node.js Panel (if applicable)"
+cd /path/to/your/node-project  # Update this path with your actual node.js project directory
+if [ ! -d "node_modules" ]; then
+    npm install  # Install Node.js dependencies
+fi
+
+echo -e "* Running Node.js server configuration"
+
+# Run the Node.js server (replace with actual panel setup if needed)
+node . --panel http://localhost:3000 --key 8c539034-466d-4b81-931f-719f308e846e
+
+echo -e "* Node.js server is now running!"
