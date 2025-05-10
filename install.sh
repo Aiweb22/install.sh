@@ -1,64 +1,63 @@
 #!/bin/bash
 
-# Update and install dependencies
-echo "Updating package list and installing dependencies..."
+# ASCII Art
+ascii_art="
+---
 
-# Install Node.js (for Ubuntu/Debian systems)
-sudo apt update -y
-sudo apt install -y nodejs npm git curl
+| \ | |     | |      | |
+|  | | __ *| | __***| |**
+| . \` |/ _\` | |/ / **| '* \\
+| |\  | (*| |   <_* \ | | |
+|*| \_|\_*,*|*|\___/*| |\_|
 
-# Check Node.js and npm installation
-echo "Checking Node.js and npm versions..."
-node -v
-npm -v
+"
 
-# Clone your repository (replace with your repository URL)
-echo "Cloning the project repository..."
-git clone https://github.com/your-username/your-repository.git /path/to/project/folder
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+YELLOW='\033[0;33m'
+NC='\033[0m' # No Color
 
-# Navigate to the project directory
-cd /path/to/project/folder
+# Clear the screen
+clear
 
-# Install Node.js dependencies
-echo "Installing Node.js dependencies..."
-npm install
+# Check if the script is run as root
+if [ "$EUID" -ne 0 ]; then
+  echo -e "${RED}Please run this script as root.${NC}"
+  exit 1
+fi
 
-# Set custom port
-CUSTOM_PORT=8080
+echo -e "${CYAN}$ascii_art${NC}"
 
-# Modify the server.js file to use the custom port
-echo "Setting custom port to $CUSTOM_PORT in server.js..."
-sed -i "s/const port = .*/const port = process.env.PORT || $CUSTOM_PORT;/g" server.js
+echo -e "* Installing Dependencies"
 
-# Set up MTA server (replace with your MTA server installation steps)
-echo "Setting up MTA server..."
-# (Install and configure your MTA server here if needed)
+# Update package list and install dependencies
+sudo apt update
+sudo apt install -y curl software-properties-common git
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt-get install nodejs -y
 
-# Create Dockerfile if you plan to use Docker
-echo "Creating Dockerfile..."
-cat > Dockerfile <<EOL
-FROM node:14
+echo -e "* Installed Dependencies"
 
-WORKDIR /usr/src/app
+echo -e "* Downloading MTA:SA Server"
 
-COPY package*.json ./
+# Download the MTA:SA server files
+wget https://mirror.multitheftauto.com/mta/mtasa_linux_x64.tar.gz -O mtasa.tar.gz
+tar -xvzf mtasa.tar.gz
+rm mtasa.tar.gz
 
-RUN npm install
+echo -e "* MTA:SA Server Installed"
 
-COPY . .
+# Optional: Copy a pre-configured server config (adjust path as needed)
+# cp /path/to/your/server.conf ./MTA/
 
-# Expose custom port (e.g., 8080)
-EXPOSE $CUSTOM_PORT
+echo -e "* Starting MTA:SA Server"
 
-CMD ["node", "server.js"]
-EOL
+# Start MTA:SA server (you might need to adjust the path depending on your setup)
+cd MTA
+./mta-server
 
-# Build Docker container (if applicable)
-echo "Building Docker image..."
-docker build -t mta-panel .
-
-# Run the server (optional if Docker is used)
-echo "Running the panel server on port $CUSTOM_PORT..."
-docker run -p $CUSTOM_PORT:$CUSTOM_PORT mta-panel
-
-echo "Installation complete! Visit http://localhost:$CUSTOM_PORT to access the panel."
+echo -e "* MTA:SA Server is now running!"
+echo -e "* Run 'node .' to start the server."
