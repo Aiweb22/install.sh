@@ -1,97 +1,64 @@
 #!/bin/bash
 
-echo "🛠 Installing Docker..."
-sudo apt update
-sudo apt install -y docker.io docker-compose
+# Update and install dependencies
+echo "Updating package list and installing dependencies..."
 
-echo "✅ Docker installed."
+# Install Node.js (for Ubuntu/Debian systems)
+sudo apt update -y
+sudo apt install -y nodejs npm git curl
 
-# Create project folder
-mkdir -p mta-docker/panel
-mkdir -p mta-docker/mta
+# Check Node.js and npm installation
+echo "Checking Node.js and npm versions..."
+node -v
+npm -v
 
-cd mta-docker
+# Clone your repository (replace with your repository URL)
+echo "Cloning the project repository..."
+git clone https://github.com/your-username/your-repository.git /path/to/project/folder
 
-echo "📦 Setting up MTA Dockerfile..."
-cat > mta/Dockerfile <<EOF
-FROM ubuntu:20.04
+# Navigate to the project directory
+cd /path/to/project/folder
 
-RUN apt update && apt install -y wget unzip screen libpcre3 libpcre3-dev libxml2
+# Install Node.js dependencies
+echo "Installing Node.js dependencies..."
+npm install
 
-WORKDIR /opt
+# Set custom port
+CUSTOM_PORT=8080
 
-RUN wget https://linux.mtasa.com/dl/153/multitheftauto_linux_x64-1.5.3.tar.gz && \\
-    tar -xvzf multitheftauto_linux_x64-1.5.3.tar.gz
+# Modify the server.js file to use the custom port
+echo "Setting custom port to $CUSTOM_PORT in server.js..."
+sed -i "s/const port = .*/const port = process.env.PORT || $CUSTOM_PORT;/g" server.js
 
-WORKDIR /opt/multitheftauto_linux_x64-1.5.3
+# Set up MTA server (replace with your MTA server installation steps)
+echo "Setting up MTA server..."
+# (Install and configure your MTA server here if needed)
 
-CMD ["screen", "-dmS", "mta", "./mta-server64"]
-EOF
+# Create Dockerfile if you plan to use Docker
+echo "Creating Dockerfile..."
+cat > Dockerfile <<EOL
+FROM node:14
 
-echo "⚙️ Setting up Node.js panel Dockerfile..."
-cat > panel/Dockerfile <<EOF
-FROM node:18
+WORKDIR /usr/src/app
 
-WORKDIR /app
-COPY . .
+COPY package*.json ./
 
 RUN npm install
 
-EXPOSE 3000
+COPY . .
+
+# Expose custom port (e.g., 8080)
+EXPOSE $CUSTOM_PORT
+
 CMD ["node", "server.js"]
-EOF
+EOL
 
-echo "🧠 Writing panel server.js..."
-cat > panel/server.js <<EOF
-const express = require('express');
-const { exec } = require('child_process');
-const app = express();
+# Build Docker container (if applicable)
+echo "Building Docker image..."
+docker build -t mta-panel .
 
-app.get('/start', (req, res) => {
-    exec('docker start mta-server', (err, stdout, stderr) => {
-        res.send(stdout || stderr);
-    });
-});
+# Run the server (optional if Docker is used)
+echo "Running the panel server on port $CUSTOM_PORT..."
+docker run -p $CUSTOM_PORT:$CUSTOM_PORT mta-panel
 
-app.get('/stop', (req, res) => {
-    exec('docker stop mta-server', (err, stdout, stderr) => {
-        res.send(stdout || stderr);
-    });
-});
-
-app.listen(3000, () => {
-    console.log('✅ Panel running at http://localhost:3000');
-});
-EOF
-
-echo "📦 Initializing Node panel..."
-cd panel
-npm init -y
-npm install express
-cd ..
-
-echo "📦 Writing docker-compose.yml..."
-cat > docker-compose.yml <<EOF
-version: '3'
-
-services:
-  mta-server:
-    build:
-      context: ./mta
-    container_name: mta-server
-    tty: true
-
-  panel:
-    build:
-      context: ./panel
-    container_name: mta-panel
-    ports:
-      - "3000:3000"
-    depends_on:
-      - mta-server
-EOF
-
-echo "🚀 Starting containers..."
-docker-compose up -d --build
-
-echo "✅ Done. Visit http://localhost:3000 to control your MTA server!"
+echo "Installation complete! Visit http://localhost:$CUSTOM_PORT to access the panel."
