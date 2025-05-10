@@ -41,7 +41,7 @@ echo -e "* Installed Dependencies"
 
 echo -e "* Downloading MTA:SA Server"
 
-# Download the MTA:SA server files
+# Download the MTA:SA server files using the correct URL
 wget https://linux.multitheftauto.com/dl/multitheftauto_linux_x64.tar.gz -O mtasa.tar.gz
 if [ $? -ne 0 ]; then
     echo -e "${RED}Failed to download MTA:SA server files! Please check the URL or your internet connection.${NC}"
@@ -86,6 +86,6 @@ fi
 echo -e "* Running Node.js server configuration"
 
 # Run the Node.js server (replace with actual panel setup if needed)
-node . --panel http://localhost:3000 --key 8c539034-466d-4b81-931f-719f308e846e
+node . --panel http://localhost:3000 --key YOUR_API_KEY
 
 echo -e "* Node.js server is now running!"
