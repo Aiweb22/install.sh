@@ -86,6 +86,6 @@ fi
 echo -e "* Running Node.js server configuration"
 
 # Run the Node.js server (replace with actual panel setup if needed)
-node . --panel http://localhost:3000 --key YOUR_API_KEY
+node . --panel http://localhost:3000 --key 8c539034-466d-4b81-931f-719f308e846e
 
 echo -e "* Node.js server is now running!"
