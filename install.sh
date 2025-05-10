@@ -72,7 +72,7 @@ fi
 echo -e "* Starting MTA:SA Server"
 
 # Start MTA:SA server
-./mta-server &
+./mta-server64 &
 
 echo -e "* MTA:SA Server is now running!"
 
