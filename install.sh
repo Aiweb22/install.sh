@@ -42,7 +42,7 @@ echo -e "* Installed Dependencies"
 echo -e "* Downloading MTA:SA Server"
 
 # Download the MTA:SA server files
-wget https://mirror.multitheftauto.com/mta/mtasa_linux_x64.tar.gz -O mtasa.tar.gz
+wget https://linux.multitheftauto.com/dl/multitheftauto_linux_x64.tar.gz -O mtasa.tar.gz
 if [ $? -ne 0 ]; then
     echo -e "${RED}Failed to download MTA:SA server files! Please check the URL or your internet connection.${NC}"
     exit 1
