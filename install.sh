@@ -64,7 +64,7 @@ fi
 cd multitheftauto_linux_x64/
 
 # Check if mta-server exists
-if [ ! -f "mta-server" ]; then
+if [ ! -f "mta-server64" ]; then
     echo -e "${RED}mta-server file not found! Please ensure the server was extracted correctly.${NC}"
     exit 1
 fi
@@ -72,7 +72,7 @@ fi
 echo -e "* Starting MTA:SA Server"
 
 # Start MTA:SA server
-./mta-server64 &
+./mta-server &
 
 echo -e "* MTA:SA Server is now running!"
 
