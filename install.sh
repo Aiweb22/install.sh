@@ -3,13 +3,11 @@
 # ASCII Art
 ascii_art="
 ---
-
 | \ | |     | |      | |
 |  | | __ *| | __***| |**
 | . \` |/ _\` | |/ / **| '* \\
 | |\  | (*| |   <_* \ | | |
 |*| \_|\_*,*|*|\___/*| |\_|
-
 "
 
 # Colors
@@ -50,14 +48,22 @@ rm mtasa.tar.gz
 
 echo -e "* MTA:SA Server Installed"
 
-# Optional: Copy a pre-configured server config (adjust path as needed)
-# cp /path/to/your/server.conf ./MTA/
+# Find the MTA folder name and change directory to it
+MTA_DIR=$(ls -d */ | grep -i 'mta' | head -n 1)
+if [ -z "$MTA_DIR" ]; then
+    echo -e "${RED}MTA directory not found!${NC}"
+    exit 1
+fi
 
-echo -e "* Starting MTA:SA Server"
+echo -e "* Changing directory to $MTA_DIR"
+cd "$MTA_DIR"
 
-# Start MTA:SA server (you might need to adjust the path depending on your setup)
-cd MTA
-./mta-server
-
-echo -e "* MTA:SA Server is now running!"
-echo -e "* Run 'node .' to start the server."
+# Start MTA:SA server
+if [ -f "./mta-server" ]; then
+    echo -e "* Starting MTA:SA Server"
+    ./mta-server
+    echo -e "* MTA:SA Server is now running!"
+else
+    echo -e "${RED}mta-server file not found!${NC}"
+    exit 1
+fi
