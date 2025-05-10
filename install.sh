@@ -62,12 +62,20 @@ fi
 echo -e "* Changing directory to $MTA_DIR"
 cd "$MTA_DIR"
 
-# Start MTA:SA server
+# List the files in the directory to confirm mta-server exists
+echo -e "* Listing files in $MTA_DIR"
+ls -l
+
+# Check if the mta-server file exists
 if [ -f "./mta-server" ]; then
     echo -e "* Starting MTA:SA Server"
     ./mta-server
     echo -e "* MTA:SA Server is now running!"
 else
-    echo -e "${RED}mta-server file not found!${NC}"
+    echo -e "${RED}mta-server file not found in $MTA_DIR!${NC}"
     exit 1
 fi
+
+# Additional message to run `node .`
+echo -e "* Run 'node .' to start the server."
+
