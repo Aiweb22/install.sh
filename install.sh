@@ -41,15 +41,19 @@ echo -e "* Installed Dependencies"
 
 echo -e "* Downloading MTA:SA Server"
 
-# Download the MTA:SA server files
-wget https://linux.multitheftauto.com/dl/multitheftauto_linux_x64.tar.gz
+# Download the MTA:SA server files from the correct URL
+wget https://linux.multitheftauto.com/dl/multitheftauto_linux_x64.tar.gz -O mtasa.tar.gz
+if [ $? -ne 0 ]; then
+    echo -e "${RED}Failed to download the MTA:SA server file!${NC}"
+    exit 1
+fi
 tar -xvzf mtasa.tar.gz
 rm mtasa.tar.gz
 
 echo -e "* MTA:SA Server Installed"
 
 # Find the MTA folder name and change directory to it
-MTA_DIR=$(ls -d */ | grep -i 'mta' | head -n 1)
+MTA_DIR=$(ls -d */ | grep -i 'multitheftauto' | head -n 1)
 if [ -z "$MTA_DIR" ]; then
     echo -e "${RED}MTA directory not found!${NC}"
     exit 1
