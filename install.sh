@@ -42,7 +42,7 @@ echo -e "* Installed Dependencies"
 echo -e "* Downloading MTA:SA Server"
 
 # Download the MTA:SA server files
-wget https://mirror.multitheftauto.com/mta/mtasa_linux_x64.tar.gz -O mtasa.tar.gz
+wget https://linux.multitheftauto.com/dl/multitheftauto_linux_x64.tar.gz
 tar -xvzf mtasa.tar.gz
 rm mtasa.tar.gz
 
