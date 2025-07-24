@@ -1,0 +1,90 @@
+{
+    "_comment": "OwlGaming MTA 1.6 Server Egg - Complete Configuration",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "name": "OwlGaming MTA 1.6 Server",
+    "author": "OwlGaming Team",
+    "description": "Complete MTA 1.6 server configuration with OwlGaming optimizations and library path fixes",
+    "docker_images": {
+        "ghcr.io/parkervcp/games:mta": "ghcr.io/parkervcp/games:mta"
+    },
+    "file_denylist": [],
+    "startup": "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/container:/home/container/x64:/home/container/x64/modules && ./mta-server64 --port {{SERVER_PORT}} --httpport {{SERVER_WEBPORT}} -n --maxplayers {{MAX_PLAYERS}} --config /home/container/mods/deathmatch/mtaserver.conf",
+    "config": {
+        "files": "{}",
+        "startup": {
+            "done": "Server started and is ready to accept connections"
+        },
+        "logs": {
+            "custom": true,
+            "location": "logs/server.log"
+        },
+        "stop": "shutdown"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!/bin/bash\n\n# OwlGaming MTA 1.6 Complete Installation\ncd /tmp\n\n# Download MTA 1.6 official files\ncurl -sSL -o multitheftauto_linux_x64-1.6.tar.gz https://linux.multitheftauto.com/dl/multitheftauto_linux_x64-1.6.tar.gz\ncurl -sSL -o mta-baseconfig-1.6.tar.gz https://linux.multitheftauto.com/dl/baseconfig-1.6.tar.gz\ncurl -sSL -o mtasa-resources-1.6.zip https://mirror.multitheftauto.com/mtasa/resources/mtasa-resources-1.6.zip\n\n# Create server directory structure\nmkdir -p /mnt/server\nmkdir -p /mnt/server/logs\n\n# Extract server files\ntar -xvf multitheftauto_linux_x64-1.6.tar.gz\ncp -rf multitheftauto_linux_x64-1.6/* /mnt/server\n\n# Install required libraries for MTA 1.6\nif [ ! -f /mnt/server/x64/libmysqlclient.so.18 ]; then\n    curl -L https://nightly.mtasa.com/files/libmysqlclient.so.18 -o /mnt/server/x64/libmysqlclient.so.18\nfi\n\n# Setup resources\nmkdir -p /mnt/server/mods/deathmatch/resources\nunzip -o -d /mnt/server/mods/deathmatch/resources mtasa-resources-1.6.zip\n\n# Extract and configure base files\ntar -xvf mta-baseconfig-1.6.tar.gz\ncp -rf baseconfig-1.6/* /mnt/server/mods/deathmatch\n\n# OwlGaming specific configurations\nsed -i 's/<client_file_download_port>.*/<client_file_download_port>${SERVER_WEBPORT}<\\/client_file_download_port>/g' /mnt/server/mods/deathmatch/mtaserver.conf\nsed -i 's/<httpdownloadport>.*/<httpdownloadport>${SERVER_WEBPORT}<\\/httpdownloadport>/g' /mnt/server/mods/deathmatch/mtaserver.conf\n\n# Set proper permissions\nchown -R root:root /mnt\nchmod -R 755 /mnt/server\nchmod +x /mnt/server/mta-server64\n\n# Create symlinks for compatibility\nln -s /mnt/server /home/container\nexport HOME=/mnt/server\n\n# Complete installation\necho \"--------------------------------------------------\"\necho \"OwlGaming MTA 1.6 Server installation completed!\"\necho \"--------------------------------------------------\"\necho \"Server Port: ${SERVER_PORT}\"\necho \"HTTP Port: ${SERVER_WEBPORT}\"",
+            "container": "ghcr.io/parkervcp/installers:ubuntu-20.04",
+            "entrypoint": "bash"
+        },
+        "configuration": {
+            "script": "#!/bin/bash\n# OwlGaming MTA 1.6 Configuration Script\n\n# Backup original config files\ncp /mnt/server/mods/deathmatch/mtaserver.conf /mnt/server/mods/deathmatch/mtaserver.conf.bak\ncp /mnt/server/mods/deathmatch/acl.xml /mnt/server/mods/deathmatch/acl.xml.bak 2>/dev/null || true\n\n# Apply 1.6 specific settings\nsed -i 's/<minclientversion>.*/<minclientversion>1.6.0<\\/minclientversion>/g' /mnt/server/mods/deathmatch/mtaserver.conf\nsed -i 's/<networkencryption>.*/<networkencryption>2<\\/networkencryption>/g' /mnt/server/mods/deathmatch/mtaserver.conf\n\n# Performance optimizations\nsed -i 's/<bandwidth_reduction>.*/<bandwidth_reduction>maximum<\\/bandwidth_reduction>/g' /mnt/server/mods/deathmatch/mtaserver.conf\nsed -i 's/<sync_interval>.*/<sync_interval>150<\\/sync_interval>/g' /mnt/server/mods/deathmatch/mtaserver.conf\nsed -i 's/<packet_limit>.*/<packet_limit>8000<\\/packet_limit>/g' /mnt/server/mods/deathmatch/mtaserver.conf\n\n# OwlGaming ACL configuration\nif ! grep -q \"OwlGaming\" /mnt/server/mods/deathmatch/acl.xml; then\n    echo \"<!-- OwlGaming Default ACL Configuration -->\" >> /mnt/server/mods/deathmatch/acl.xml\n    echo \"<group name='OwlGaming.Admins'>\" >> /mnt/server/mods/deathmatch/acl.xml\n    echo \"    <acl name='Admin' />\" >> /mnt/server/mods/deathmatch/acl.xml\n    echo \"    <object name='resource.admin' />\" >> /mnt/server/mods/deathmatch/acl.xml\n    echo \"    <object name='resource.acpanel' />\" >> /mnt/server/mods/deathmatch/acl.xml\n    echo \"</group>\" >> /mnt/server/mods/deathmatch/acl.xml\n    echo \"\" >> /mnt/server/mods/deathmatch/acl.xml\n    echo \"<group name='OwlGaming.Moderators'>\" >> /mnt/server/mods/deathmatch/acl.xml\n    echo \"    <acl name='Moderator' />\" >> /mnt/server/mods/deathmatch/acl.xml\n    echo \"    <object name='resource.mapcycler' />\" >> /mnt/server/mods/deathmatch/acl.xml\n    echo \"    <object name='resource.helpmanager' />\" >> /mnt/server/mods/deathmatch/acl.xml\n    echo \"</group>\" >> /mnt/server/mods/deathmatch/acl.xml\nfi\n\n# Create default OwlGaming resources folder\nmkdir -p /mnt/server/mods/deathmatch/resources/owl-resources\n\necho \"Applied OwlGaming MTA 1.6 configuration\"\necho \"Server Name: ${SERVER_NAME}\"\necho \"Max Players: ${MAX_PLAYERS}\"",
+            "container": "ghcr.io/parkervcp/installers:ubuntu-20.04",
+            "entrypoint": "bash"
+        }
+    },
+    "variables": [
+        {
+            "name": "SERVER_WEBPORT",
+            "description": "HTTP port for resources (SERVER_PORT+3)",
+            "env_variable": "SERVER_WEBPORT",
+            "default_value": "22005",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "required|numeric",
+            "field_type": "text"
+        },
+        {
+            "name": "MAX_PLAYERS",
+            "description": "Maximum player slots (1-200)",
+            "env_variable": "MAX_PLAYERS",
+            "default_value": "100",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|numeric|min:1|max:200",
+            "field_type": "text"
+        },
+        {
+            "name": "SERVER_NAME",
+            "description": "Server name displayed in browser",
+            "env_variable": "SERVER_NAME",
+            "default_value": "OwlGaming MTA 1.6 Server",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:60",
+            "field_type": "text"
+        },
+        {
+            "name": "ADMIN_PASSWORD",
+            "description": "Server admin password",
+            "env_variable": "ADMIN_PASSWORD",
+            "default_value": "changeme123",
+            "user_viewable": false,
+            "user_editable": true,
+            "rules": "required|string|min:6",
+            "field_type": "password"
+        },
+        {
+            "name": "SERVER_IP",
+            "description": "Public IP for server (leave blank for auto)",
+            "env_variable": "SERVER_IP",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|ip",
+            "field_type": "text"
+        }
+    ]
+}
